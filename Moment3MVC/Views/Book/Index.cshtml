@@ -4,7 +4,7 @@
     ViewData["Title"] = "Books";
 }
 
-<h1 class="title">Books</h1>
+<h1 class="title">Books List</h1>
 
 <p>
     <a class="button is-primary" asp-controller="Book" asp-action="Create">Create New</a>
@@ -36,7 +36,10 @@
                     <td>@item.PublishedDate.ToShortDateString()</td>
                     <td>
                         <a class="button is-small is-info" asp-controller="Books" asp-action="Edit" asp-route-id="@item.Id">Edit</a>
-                        <a class="button is-small is-danger" asp-controller="Books" asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                        <!--Kind of scuffed delete, its a form with the base valude delete to call the function and gets the id of the current item, but it works-->
+                        <form asp-controller="Book" asp-action="Delete" asp-route-id="@item.Id" method="post" style="display:inline;">
+                            <button type="submit" class="button is-small is-danger">Delete</button>
+                        </form>
                         <a class="button is-small is-link" asp-controller="Books" asp-action="Details" asp-route-id="@item.Id">Details</a>
                     </td>
                 </tr>

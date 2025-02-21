@@ -4,43 +4,40 @@
     ViewData["Title"] = "Create Book";
 }
 
-<h1 class="title">Create Book</h1>
+<h1 class="title">Create New Book</h1>
 
-<h4>Book</h4>
 <hr />
-<div class="box">
-    <form asp-action="Create">
-        <div class="field">
-            <label class="label" asp-for="Title"></label>
-            <div class="control">
-                <input class="input" asp-for="Title" />
-            </div>
-            <span class="help is-danger" asp-validation-for="Title"></span>
+<form asp-action="Create">
+    <div class="field">
+        <label class="label" asp-for="Title"></label>
+        <div class="control">
+            <input class="input" asp-for="Title" />
         </div>
-        <div class="field">
-            <label class="label" asp-for="Author"></label>
-            <div class="control">
-                <input class="input" asp-for="Author" />
-            </div>
-            <span class="help is-danger" asp-validation-for="Author"></span>
+        <span class="help is-danger" asp-validation-for="Title"></span>
+    </div>
+    <div class="field">
+        <label class="label" asp-for="Author"></label>
+        <div class="control">
+            <input class="input" asp-for="Author" />
         </div>
-        <div class="field">
-            <label class="label" asp-for="PublishedDate"></label>
-            <div class="control">
-                <input class="input" asp-for="PublishedDate" type="date" />
-            </div>
-            <span class="help is-danger" asp-validation-for="PublishedDate"></span>
+        <span class="help is-danger" asp-validation-for="Author"></span>
+    </div>
+    <div class="field">
+        <label class="label" asp-for="PublishedDate"></label>
+        <div class="control">
+            <input class="input" asp-for="PublishedDate" type="date" />
         </div>
-        <div class="field is-grouped">
-            <div class="control">
-                <button type="submit" class="button is-primary">Create</button>
-            </div>
-            <div class="control">
-                <a class="button is-light" asp-controller="Main" asp-action="Index">Cancel</a>
-            </div>
+        <span class="help is-danger" asp-validation-for="PublishedDate"></span>
+    </div>
+    <div class="field is-grouped">
+        <div class="control">
+            <button type="submit" class="button is-primary">Create</button>
         </div>
-    </form>
-</div>
+        <div class="control">
+            <a class="button is-light" asp-controller="Main" asp-action="Index">Cancel</a>
+        </div>
+    </div>
+</form>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

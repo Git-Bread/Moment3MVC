@@ -26,7 +26,7 @@ namespace Moment3MVC.Controllers
             return View();
         }
 
-        // POST: Create
+        // POST: Books Create
         [HttpPost]
         public async Task<IActionResult> Create([Bind("Id,Title,Author,PublishedDate")] Book book)
         {
@@ -37,6 +37,20 @@ namespace Moment3MVC.Controllers
                 return RedirectToAction(nameof(Index));
             }
             return View(book);
+        }
+
+        // POST: Delete Books, not a DELETE call.... since post was easier to implement
+        [HttpPost]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var book = await _context.Books.FindAsync(id);
+            if (book == null)
+            {
+                return RedirectToAction(nameof(Index));
+            }
+            _context.Books.Remove(book);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
     }
 }

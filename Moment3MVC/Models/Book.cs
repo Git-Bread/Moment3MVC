@@ -4,11 +4,16 @@ namespace Moment3MVC.Models
 {
     public class Book
     {
+        [Key]
         public int Id { get; set; }
-        [Required]
+        [Required(ErrorMessage = "Title is required")]
+        [StringLength(40, ErrorMessage = "Title cannot be longer than 40 characters, abbreviate it")]
         public string Title { get; set; } = string.Empty;
-        [Required]
+        [Required(ErrorMessage = "Title is required")]
+        [StringLength(20, ErrorMessage = "Authors name should not be longer then 20 characters, abbreviate it or remove middle-names")]
         public string Author { get; set; } = string.Empty;
+        [Required(ErrorMessage = "Published Date is needed")]
+        [DataType(DataType.Date)]
         public DateTime PublishedDate { get; set; } = DateTime.UnixEpoch;
     }
 }
