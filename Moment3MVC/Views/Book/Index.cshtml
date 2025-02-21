@@ -1,0 +1,46 @@
+﻿@model IEnumerable<Moment3MVC.Models.Book>
+
+@{
+    ViewData["Title"] = "Books";
+}
+
+<h1 class="title">Books</h1>
+
+<p>
+    <a class="button is-primary" asp-controller="Book" asp-action="Create">Create New</a>
+</p>
+
+<table class="table is-striped is-hoverable">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Author</th>
+            <th>Published Date</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model == null)
+        {
+            <tr>
+                <td colspan="4">No books found</td>
+            </tr>
+        }
+        else
+        {
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Title</td>
+                    <td>@item.Author</td>
+                    <td>@item.PublishedDate.ToShortDateString()</td>
+                    <td>
+                        <a class="button is-small is-info" asp-controller="Books" asp-action="Edit" asp-route-id="@item.Id">Edit</a>
+                        <a class="button is-small is-danger" asp-controller="Books" asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                        <a class="button is-small is-link" asp-controller="Books" asp-action="Details" asp-route-id="@item.Id">Details</a>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
