@@ -15,5 +15,7 @@ namespace Moment3MVC.Models
         [Required(ErrorMessage = "Published Date is needed")]
         [DataType(DataType.Date)]
         public DateTime PublishedDate { get; set; } = DateTime.UnixEpoch;
+        [Required(ErrorMessage = "Description is needed")]
+        public string BookDescription { get; set; } = string.Empty;
     }
 }

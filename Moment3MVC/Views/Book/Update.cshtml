@@ -1,13 +1,13 @@
 ﻿@model Moment3MVC.Models.Book
 
 @{
-    ViewData["Title"] = "Create Book";
+    ViewData["Title"] = "Edit Book";
 }
 
-<h1 class="title">Create New Book</h1>
+<h1 class="title">Edit Book</h1>
 
 <hr />
-<form asp-action="Create">
+<form asp-action="Update">
     <div class="field">
         <label class="label" asp-for="Title"></label>
         <div class="control">
@@ -38,10 +38,10 @@
     </div>
     <div class="field is-grouped">
         <div class="control">
-            <button type="submit" class="button is-primary">Create</button>
+            <button type="submit" class="button is-primary">Save</button>
         </div>
         <div class="control">
-            <a class="button is-light" asp-controller="Main" asp-action="Index">Cancel</a>
+            <a class="button is-light" asp-action="Index">Cancel</a>
         </div>
     </div>
 </form>
