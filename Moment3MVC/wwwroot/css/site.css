@@ -1,22 +1,30 @@
-html {
-  font-size: 14px;
+@import url("https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css");
+
+/* Ensure the navbar serves as the positioning context */
+.navbar.relative {
+    position: relative;
 }
 
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+/* makes dropdown not extend parent */
+#navbarDropdown.navbar-menu {
+    position: absolute;
+    top: 100%;
+    left: -200px;
+    right: 0;
+    display: none;
+    z-index: 10;
+    visibility: hidden;
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+/* Display the dropdown when 'is-active' class is present */
+#navbarDropdown.navbar-menu.is-active {
+    display: block;
+    visibility: visible;
 }
 
-html {
-  position: relative;
-  min-height: 100%;
+/* some extra spacing */
+.navbar-menu .navbar-start .navbar-item {
+    padding: 0.75rem 1.5rem;
 }
 
-body {
-  margin-bottom: 60px;
-}
+is-danger

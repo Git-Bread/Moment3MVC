@@ -4,21 +4,9 @@ using Moment3MVC.Models;
 
 namespace Moment3MVC.Controllers
 {
-    public class HomeController : Controller
+    public class MainController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
-
-        public HomeController(ILogger<HomeController> logger)
-        {
-            _logger = logger;
-        }
-
         public IActionResult Index()
-        {
-            return View();
-        }
-
-        public IActionResult Privacy()
         {
             return View();
         }
