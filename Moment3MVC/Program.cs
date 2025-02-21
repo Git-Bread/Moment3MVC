@@ -1,7 +1,15 @@
+using Microsoft.EntityFrameworkCore;
+using Moment3MVC.Data;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddDbContext<BookDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultDbConnection"))
+);
+ 
 
 var app = builder.Build();
 
@@ -23,5 +31,6 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Main}/{action=Index}/{id?}");
+
 
 app.Run();
