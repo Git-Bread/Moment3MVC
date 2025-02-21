@@ -1,5 +1,39 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model Moment3MVC.Models.Book
+
 @{
+    ViewData["Title"] = "Book Details";
 }
+
+<h1 class="title">Book Details - @Model.Title</h1>
+<hr/>
+<div>
+    <div class="field">
+        <label class="label">Title</label>
+        <div class="control">
+            <input class="input" value="@Model.Title" readonly />
+        </div>
+    </div>
+    <div class="field">
+        <label class="label">Author</label>
+        <div class="control">
+            <input class="input" value="@Model.Author" readonly />
+        </div>
+    </div>
+    <div class="field">
+        <label class="label">Published Date</label>
+        <div class="control">
+            <input class="input" value="@Model.PublishedDate.ToShortDateString()" readonly />
+        </div>
+    </div>
+    <div class="field">
+        <label class="label">Description</label>
+        <div class="control">
+            <textarea class="textarea" readonly>@Model.BookDescription</textarea>
+        </div>
+    </div>
+    <div class="field">
+        <div class="control">
+            <a class="button is-light" asp-action="Index">Back to List</a>
+        </div>
+    </div>
+</div>

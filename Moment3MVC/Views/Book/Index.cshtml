@@ -2,12 +2,39 @@
 
 @{
     ViewData["Title"] = "Books";
+    var searchMode = ViewData["CurrentSearchMode"]?.ToString() ?? "Default";
 }
 
 <h1 class="title">Books List</h1>
 
+<form asp-controller="Book" asp-action="Index" method="get" class="columns level ml-1 mr-1">
+    <div>
+        <div class="field has-addons">
+            <div class="control">
+                <input class="input" type="text" name="searchString" placeholder="Search for books...">
+            </div>
+            <div class="control">
+                <button type="submit" class="button is-primary">Search</button>
+            </div>
+        </div>
+    </div>
+    <div class="field">
+        <div class="control columns">
+			<h2 class="mr-2">Search by:</h2>
+            <div class="select">
+                <select name="searchMode" asp-for="@searchMode">
+                    <option value="Default">Name/Author</option>
+                    <option value="Title">Title</option>
+                    <option value="Author">Author</option>
+                    <option value="PublishedDate">Published Year</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</form>
+
 <p>
-    <a class="button is-primary" asp-controller="Book" asp-action="Create">Create New</a>
+    <a class="button is-primary ml-1" asp-controller="Book" asp-action="Create">Create New</a>
 </p>
 
 <table class="table is-striped is-hoverable">
@@ -36,11 +63,10 @@
                     <td>@item.PublishedDate.ToShortDateString()</td>
                     <td>
                         <a class="button is-small is-info" asp-controller="Book" asp-action="Update" asp-route-id="@item.Id">Edit</a>
-                        <!--Kind of scuffed delete, its a form with the base valude delete to call the function and gets the id of the current item, but it works-->
                         <form asp-controller="Book" asp-action="Delete" asp-route-id="@item.Id" method="post" style="display:inline;">
                             <button type="submit" class="button is-small is-danger">Delete</button>
                         </form>
-                        <a class="button is-small is-link" asp-controller="Book" asp-action="Details" asp-route-id="@item.Id">Details</a>
+                        <a class="button is-small is-link" asp-controller="Book" asp-action="Book" asp-route-id="@item.Id">Details</a>
                     </td>
                 </tr>
             }

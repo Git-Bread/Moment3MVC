@@ -14,6 +14,7 @@ namespace Moment3MVC.Models
         public string Author { get; set; } = string.Empty;
         [Required(ErrorMessage = "Published Date is needed")]
         [DataType(DataType.Date)]
+        [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
         public DateTime PublishedDate { get; set; } = DateTime.UnixEpoch;
         [Required(ErrorMessage = "Description is needed")]
         public string BookDescription { get; set; } = string.Empty;

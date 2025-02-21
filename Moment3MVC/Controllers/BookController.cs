@@ -14,19 +14,52 @@ namespace Moment3MVC.Controllers
             _context = context;
         }
 
-        // GET: Index with books list
-        public async Task<IActionResult> Index()
+        //Search remembering
+        string searchMode = "Default";
+        public string UpdateSearchMode(string mode)
         {
-            return View(await _context.Books.ToListAsync());
+            searchMode = mode;
+            return searchMode;
         }
 
-        // GET: Books Create
+        //Index with Search Functionality
+        public async Task<IActionResult> Index(string searchString, string searchMode)
+        {
+            var books = from b in _context.Books select b;
+
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                switch (searchMode)
+                {
+                    case "Title":
+                        books = books.Where(s => s.Title.Contains(searchString));
+                        break;
+                    case "Author":
+                        books = books.Where(s => s.Author.Contains(searchString));
+                        break;
+                    case "PublishedDate":
+                        if (int.TryParse(searchString, out int year))
+                        {
+                            books = books.Where(s => s.PublishedDate.Year == year);
+                        }
+                        break;
+                    default:
+                        books = books.Where(s => s.Title.Contains(searchString) || s.Author.Contains(searchString));
+                        break;
+                }
+                UpdateSearchMode(searchMode);
+            }
+
+            return View(await books.ToListAsync());
+        }
+
+        //Books Create
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Books Create Database Entry
+        //Books Create Database Entry
         [HttpPost]
         public async Task<IActionResult> Create([Bind("Id,Title,Author,PublishedDate,BookDescription")] Book book)
         {
@@ -39,8 +72,8 @@ namespace Moment3MVC.Controllers
             return View(book);
         }
 
-        // POST: Delete Books, not a DELETE call.... since post was easier to implement and html forms dont natively support DELETE.
-        //  it seams like this is standard practice, but not sure since why would DELETE exist then?
+        //Delete Books, not a DELETE call.... since post was easier to implement and html forms dont natively support DELETE.
+        // it seams like this is standard practice, but not sure since why would DELETE exist then?
         [HttpPost]
         public async Task<IActionResult> Delete(int id)
         {
@@ -54,7 +87,7 @@ namespace Moment3MVC.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // GET: Book Update
+        //Book Update
         public async Task<IActionResult> Update(int? id)
         {
             var book = await _context.Books.FindAsync(id);
@@ -66,7 +99,7 @@ namespace Moment3MVC.Controllers
             return View(book);
         }
 
-        // POST: Book Update Database
+        //Book Update Database
         [HttpPost]
         public async Task<IActionResult> Update(int id, [Bind("Id,Title,Author,PublishedDate, BookDescription")] Book book)
         {
@@ -85,5 +118,18 @@ namespace Moment3MVC.Controllers
             }
             return View(book);
         }
+
+        //Book Description
+        public async Task<IActionResult> Book(int? id)
+        {
+            var book = await _context.Books.FindAsync(id);
+            Console.WriteLine(book);
+            if (book == null)
+            {
+                return RedirectToAction(nameof(Index));
+            }
+            return View(book);
+        }
+
     }
 }

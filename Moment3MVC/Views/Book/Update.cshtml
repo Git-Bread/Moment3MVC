@@ -9,28 +9,28 @@
 <hr />
 <form asp-action="Update">
     <div class="field">
-        <label class="label" asp-for="Title"></label>
+        <label class="label" asp-for="Title">Title</label>
         <div class="control">
             <input class="input" asp-for="Title" />
         </div>
         <span class="help is-danger" asp-validation-for="Title"></span>
     </div>
     <div class="field">
-        <label class="label" asp-for="Author"></label>
+        <label class="label" asp-for="Author">Author</label>
         <div class="control">
             <input class="input" asp-for="Author" />
         </div>
         <span class="help is-danger" asp-validation-for="Author"></span>
     </div>
     <div class="field">
-        <label class="label" asp-for="PublishedDate"></label>
+        <label class="label" asp-for="PublishedDate">Published Date</label>
         <div class="control">
             <input class="input" asp-for="PublishedDate" type="date" />
         </div>
         <span class="help is-danger" asp-validation-for="PublishedDate"></span>
     </div>
     <div class="field">
-        <label class="label" asp-for="BookDescription"></label>
+        <label class="label" asp-for="BookDescription">Book Description</label>
         <div class="control">
             <textarea class="textarea" asp-for="BookDescription"></textarea>
         </div>
