@@ -37,12 +37,25 @@
         </header>
 
         <main class="content container mt-4 box p-5">
+            @if (TempData["Success"] != null)
+            {
+                <div class="notification is-success">
+                    @TempData["Success"]
+                </div>
+            }
+
+            @if (TempData["Error"] != null)
+            {
+                <div class="notification is-danger">
+                    @TempData["Error"]
+                </div>
+            }
             @RenderBody()
         </main>
     </div>
     <footer class="footer text-center mt-4">
         <div class="container">
-            <span>&copy; 2024 - MyMvcApp</span>
+            <span>&copy; 2025 - Uppgift 3</span>
         </div>
     </footer>
 

@@ -1,0 +1,77 @@
+﻿@model Moment3MVC.Models.Loans
+
+@{
+    ViewData["Title"] = "Borrow Book";
+}
+
+<h1 class="title">Borrow Book</h1>
+<hr />
+<div class="box">
+    <h2 class="subtitle">Book Details</h2>
+    <div class="field">
+        <label class="label">Title</label>
+        <div class="control">
+            <input class="input" value="@Model.Book?.Title" readonly />
+        </div>
+    </div>
+    <div class="field">
+        <label class="label">Author</label>
+        <div class="control">
+            <input class="input" value="@Model.Book?.Author" readonly />
+        </div>
+    </div>
+    <div class="field">
+        <label class="label">Published Date</label>
+        <div class="control">
+            <input class="input" value="@Model.Book?.PublishedDate.ToShortDateString()" readonly />
+        </div>
+    </div>
+    <div class="field">
+        <label class="label">Description</label>
+        <div class="control">
+            <textarea class="textarea" readonly>@Model.Book?.BookDescription</textarea>
+        </div>
+    </div>
+</div>
+
+<div class="box">
+    <h2 class="title is-4">Borrow Book</h2>
+
+    <div asp-validation-summary="ModelOnly" class="notification is-danger"></div>
+
+    <form asp-action="Borrow" method="post">
+        <input type="hidden" asp-for="BookId" />
+
+        <div class="field">
+            <label asp-for="Name" class="label">Your Name</label>
+            <div class="control">
+                <input asp-for="Name" class="input" />
+            </div>
+            <span asp-validation-for="Name" class="help is-danger"></span>
+        </div>
+
+        <div class="field">
+            <label asp-for="ReturnDate" class="label">Return Date</label>
+            <div class="control">
+                <input asp-for="ReturnDate" class="input" type="date" 
+                       min="@DateTime.Now.AddDays(2).ToString("yyyy-MM-dd")"
+                       max="@DateTime.Now.AddDays(7).ToString("yyyy-MM-dd")" />
+            </div>
+            <span asp-validation-for="ReturnDate" class="help is-danger"></span>
+            <p class="help">Return date must be between 3 and 7 days from today.</p>
+        </div>
+
+        <div class="field is-grouped mt-5">
+            <div class="control">
+                <button type="submit" class="button is-primary">Borrow</button>
+            </div>
+            <div class="control">
+                <a asp-action="Index" class="button is-light">Back to List</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

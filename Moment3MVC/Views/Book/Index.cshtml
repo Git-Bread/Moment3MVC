@@ -43,7 +43,7 @@
             <th>Title</th>
             <th>Author</th>
             <th>Published Date</th>
-            <th></th>
+            <th>Borrowed Untill</th>
         </tr>
     </thead>
     <tbody>
@@ -61,12 +61,14 @@
                     <td>@item.Title</td>
                     <td>@item.Author</td>
                     <td>@item.PublishedDate.ToShortDateString()</td>
+                    <td>@item.IsLoaned</td>
                     <td>
                         <a class="button is-small is-info" asp-controller="Book" asp-action="Update" asp-route-id="@item.Id">Edit</a>
                         <form asp-controller="Book" asp-action="Delete" asp-route-id="@item.Id" method="post" style="display:inline;">
                             <button type="submit" class="button is-small is-danger">Delete</button>
                         </form>
                         <a class="button is-small is-link" asp-controller="Book" asp-action="Book" asp-route-id="@item.Id">Details</a>
+                        <a class="button is-small is-link" asp-controller="Book" asp-action="Borrow" asp-route-id="@item.Id">Borrow</a>
                     </td>
                 </tr>
             }

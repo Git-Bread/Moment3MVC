@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Moment3MVC.Data;
 
@@ -10,9 +11,11 @@ using Moment3MVC.Data;
 namespace Moment3MVC.Migrations
 {
     [DbContext(typeof(BookDbContext))]
-    partial class BookDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250221183658_ForeignKey-Check")]
+    partial class ForeignKeyCheck
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.2");
@@ -69,7 +72,8 @@ namespace Moment3MVC.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BookId");
+                    b.HasIndex("BookId")
+                        .IsUnique();
 
                     b.ToTable("Loans");
                 });
@@ -77,12 +81,18 @@ namespace Moment3MVC.Migrations
             modelBuilder.Entity("Moment3MVC.Models.Loans", b =>
                 {
                     b.HasOne("Moment3MVC.Models.Book", "Book")
-                        .WithMany()
-                        .HasForeignKey("BookId")
+                        .WithOne("Loan")
+                        .HasForeignKey("Moment3MVC.Models.Loans", "BookId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Book");
+                });
+
+            modelBuilder.Entity("Moment3MVC.Models.Book", b =>
+                {
+                    b.Navigation("Loan")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

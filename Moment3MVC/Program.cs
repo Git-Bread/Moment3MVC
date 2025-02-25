@@ -9,7 +9,12 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<BookDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultDbConnection"))
 );
- 
+
+// Add logging services
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+builder.Logging.SetMinimumLevel(LogLevel.Information); // Ensure the minimum log level is set
 
 var app = builder.Build();
 

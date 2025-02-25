@@ -9,9 +9,18 @@ namespace Moment3MVC.Controllers
     {
         //context "controller" (is that what you call it?) to interact with the database
         private readonly BookDbContext _context;
-        public BookController(BookDbContext context)
+        private readonly ILogger<BookController> _logger;
+
+        public BookController(BookDbContext context, ILogger<BookController> logger)
         {
             _context = context;
+            _logger = logger;
+        }
+
+        public void OnGet()
+        {
+            _logger.LogInformation("About page visited at {DT}",
+                DateTime.UtcNow.ToLongTimeString());
         }
 
         //Search remembering
@@ -22,9 +31,29 @@ namespace Moment3MVC.Controllers
             return searchMode;
         }
 
+        private async Task CheckExpiredLoans()
+        {
+            var currentDate = DateTime.Now;
+            var expiredLoans = await _context.Loans
+                .Include(l => l.Book)
+                .Where(l => l.ReturnDate < currentDate && l.Book.IsLoaned)
+                .ToListAsync();
+            if (expiredLoans.Any())
+            {
+                foreach (var loan in expiredLoans)
+                {
+                    loan.Book.IsLoaned = false;
+                    _context.Update(loan.Book);
+                    _logger.LogInformation($"Auto-returned book: {loan.Book.Title} from {loan.Name}");
+                }
+                await _context.SaveChangesAsync();
+            }
+        }
+
         //Index with Search Functionality
         public async Task<IActionResult> Index(string searchString, string searchMode)
         {
+            await CheckExpiredLoans();
             var books = from b in _context.Books select b;
 
             if (!string.IsNullOrEmpty(searchString))
@@ -131,5 +160,83 @@ namespace Moment3MVC.Controllers
             return View(book);
         }
 
+        [HttpGet]
+        public IActionResult Borrow(int id)
+        {
+            // Include the Book details when querying
+            var book = _context.Books.FirstOrDefault(b => b.Id == id);
+            if (book == null)
+            {
+                TempData["Error"] = "Book not found.";
+                return RedirectToAction("Index");
+            }
+            
+            if (book.IsLoaned)
+            {
+                TempData["Error"] = "Book is already loaned.";
+                return RedirectToAction("Index");
+            }
+            
+            var loan = new Loans 
+            { 
+                BookId = id,
+                LoanDate = DateTime.Now,
+                ReturnDate = DateTime.Now.AddDays(3),
+                Book = book  // Set the Book property here
+            };
+            
+            return View(loan);
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Borrow([Bind("BookId,ReturnDate,Name")] Loans loan)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(loan);
+            }
+
+            loan.LoanDate = DateTime.Now;
+            var book = await _context.Books.FindAsync(loan.BookId);
+            
+            if (book == null)
+            {
+                TempData["Error"] = "Book not found.";
+                return RedirectToAction("Index");
+            }
+
+            if (book.IsLoaned)
+            {
+                TempData["Error"] = "Book is already loaned.";
+                return RedirectToAction("Index");
+            }
+
+            if (loan.ReturnDate < loan.LoanDate.AddDays(2) || loan.ReturnDate > loan.LoanDate.AddDays(7))
+            {
+                TempData["Error"] = "Return date must be between 3 and 7 days from today.";
+                loan.Book = book;
+                return View(loan);
+            }
+
+            try
+            {
+                book.IsLoaned = true;
+                loan.Book = book;
+                
+                _context.Update(book);
+                _context.Loans.Add(loan);
+                await _context.SaveChangesAsync();
+
+                TempData["Success"] = "Book successfully borrowed!";
+                return RedirectToAction("Index");
+            }
+            catch (Exception)
+            {
+                ModelState.AddModelError("", "An error occurred while processing the loan.");
+                return View(loan);
+            }
+        }
     }
 }
