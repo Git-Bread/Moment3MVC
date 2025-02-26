@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Moment3MVC.Models
 {
@@ -6,20 +7,15 @@ namespace Moment3MVC.Models
     {
         [Key]
         public int LoanId { get; set; }
-        
-        [Required(ErrorMessage = "Book ID is required")]
+        [Required]
         public int BookId { get; set; }
-        
-        [Required(ErrorMessage = "Name is required")]
-        [StringLength(100, ErrorMessage = "Name cannot be longer than 100 characters")]
+        [Required]
+        [StringLength(100)]
         public string Name { get; set; } = string.Empty;
-        
         public DateTime LoanDate { get; set; }
-        
-        [Required(ErrorMessage = "Return date is required")]
-        [Display(Name = "Return Date")]
+        [Required]
         public DateTime ReturnDate { get; set; }
-        
-        public Book? Book { get; set; }
+        [ForeignKey("BookId")]
+        public virtual Book? Book { get; set; }
     }
 }

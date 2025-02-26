@@ -45,9 +45,7 @@ namespace Moment3MVC.Controllers
                         //Set the book as available again
                         loan.Book.IsLoaned = false;
                         _context.Update(loan.Book);
-                        //Remove the loan entry from the database
-                        _context.Loans.Remove(loan);
-                        _logger.LogInformation($"Returned book: {loan.Book.Title} from {loan.Name} and removed loan entry.");
+                        _logger.LogInformation($"Returned book: {loan.Book.Title} from {loan.Name}.");
                     }
                 }
                 await _context.SaveChangesAsync();
@@ -84,6 +82,15 @@ namespace Moment3MVC.Controllers
             }
 
             return View(await books.ToListAsync());
+        }
+
+        public async Task<IActionResult> Loan()
+        {
+            var loans = await _context.Loans
+                .Include(l => l.Book)
+                .OrderByDescending(l => l.LoanDate)
+                .ToListAsync();
+            return View(loans);
         }
 
         //Books Create View

@@ -1,0 +1,38 @@
+@model IEnumerable<Moment3MVC.Models.Loans>
+
+@{
+    ViewData["Title"] = "Loan History";
+}
+
+<h1 class="title">Loans</h1>
+
+<table class="table is-striped is-hoverable">
+    <thead>
+        <tr>
+            <th>Book Title</th>
+            <th>Borrower</th>
+            <th>Loan Date</th>
+            <th>Return Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model == null || !Model.Any())
+        {
+            <tr>
+                <td colspan="5">No loan records found</td>
+            </tr>
+        }
+        else
+        {
+            @foreach (var loan in Model)
+            {
+                <tr>
+                    <td>@loan.Book?.Title</td>
+                    <td>@loan.Name</td>
+                    <td>@loan.LoanDate.ToShortDateString()</td>
+                    <td>@loan.ReturnDate.ToShortDateString()</td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
