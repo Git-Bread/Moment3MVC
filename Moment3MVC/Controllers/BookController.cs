@@ -9,20 +9,16 @@ namespace Moment3MVC.Controllers
     {
         //context "controller" (is that what you call it?) to interact with the database
         private readonly BookDbContext _context;
+        //DEBUGGING
         private readonly ILogger<BookController> _logger;
 
+        //Constructor
         public BookController(BookDbContext context, ILogger<BookController> logger)
         {
             _context = context;
             _logger = logger;
         }
-
-        public void OnGet()
-        {
-            _logger.LogInformation("About page visited at {DT}",
-                DateTime.UtcNow.ToLongTimeString());
-        }
-
+        
         //Search remembering
         string searchMode = "Default";
         public string UpdateSearchMode(string mode)
@@ -31,20 +27,28 @@ namespace Moment3MVC.Controllers
             return searchMode;
         }
 
+        //Check for expired loans
         private async Task CheckExpiredLoans()
         {
             var currentDate = DateTime.Now;
             var expiredLoans = await _context.Loans
                 .Include(l => l.Book)
-                .Where(l => l.ReturnDate < currentDate && l.Book.IsLoaned)
+                .Where(l => l.ReturnDate < currentDate && l.Book != null && l.Book.IsLoaned)
                 .ToListAsync();
+
             if (expiredLoans.Any())
             {
                 foreach (var loan in expiredLoans)
                 {
-                    loan.Book.IsLoaned = false;
-                    _context.Update(loan.Book);
-                    _logger.LogInformation($"Auto-returned book: {loan.Book.Title} from {loan.Name}");
+                    if (loan.Book != null)
+                    {
+                        //Set the book as available again
+                        loan.Book.IsLoaned = false;
+                        _context.Update(loan.Book);
+                        //Remove the loan entry from the database
+                        _context.Loans.Remove(loan);
+                        _logger.LogInformation($"Returned book: {loan.Book.Title} from {loan.Name} and removed loan entry.");
+                    }
                 }
                 await _context.SaveChangesAsync();
             }
@@ -82,7 +86,7 @@ namespace Moment3MVC.Controllers
             return View(await books.ToListAsync());
         }
 
-        //Books Create
+        //Books Create View
         public IActionResult Create()
         {
             return View();
@@ -90,6 +94,7 @@ namespace Moment3MVC.Controllers
 
         //Books Create Database Entry
         [HttpPost]
+        [ValidateAntiForgeryToken] //Prevents CSRF, good practice
         public async Task<IActionResult> Create([Bind("Id,Title,Author,PublishedDate,BookDescription")] Book book)
         {
             if (ModelState.IsValid)
@@ -102,8 +107,9 @@ namespace Moment3MVC.Controllers
         }
 
         //Delete Books, not a DELETE call.... since post was easier to implement and html forms dont natively support DELETE.
-        // it seams like this is standard practice, but not sure since why would DELETE exist then?
+        //it seems like this is standard practice, but not sure since why would DELETE exist then?
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
             var book = await _context.Books.FindAsync(id);
@@ -130,6 +136,7 @@ namespace Moment3MVC.Controllers
 
         //Book Update Database
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Update(int id, [Bind("Id,Title,Author,PublishedDate, BookDescription")] Book book)
         {
             if (ModelState.IsValid)
@@ -139,9 +146,10 @@ namespace Moment3MVC.Controllers
                     _context.Update(book);
                     await _context.SaveChangesAsync();
                 }
-                catch (Exception)
+                catch (Exception error)
                 {
-                    throw;
+                    ModelState.AddModelError(error.ToString(), "An error occurred while updating the book.");
+                    return View(book);
                 }
                 return RedirectToAction(nameof(Index));
             }
@@ -160,10 +168,11 @@ namespace Moment3MVC.Controllers
             return View(book);
         }
 
+        //Borrow Book
         [HttpGet]
         public IActionResult Borrow(int id)
         {
-            // Include the Book details when querying
+            //Query the book from the database
             var book = _context.Books.FirstOrDefault(b => b.Id == id);
             if (book == null)
             {
@@ -177,18 +186,20 @@ namespace Moment3MVC.Controllers
                 return RedirectToAction("Index");
             }
             
+            //Create a new loan entry, might be better with a foreign key setup
             var loan = new Loans 
             { 
                 BookId = id,
                 LoanDate = DateTime.Now,
                 ReturnDate = DateTime.Now.AddDays(3),
-                Book = book  // Set the Book property here
+                Book = book
             };
             
             return View(loan);
         }
 
 
+        //Borrow Book Database Functionality
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Borrow([Bind("BookId,ReturnDate,Name")] Loans loan)
@@ -198,21 +209,23 @@ namespace Moment3MVC.Controllers
                 return View(loan);
             }
 
+            //sets loandate to current date
             loan.LoanDate = DateTime.Now;
             var book = await _context.Books.FindAsync(loan.BookId);
-            
             if (book == null)
             {
                 TempData["Error"] = "Book not found.";
                 return RedirectToAction("Index");
             }
 
+            //stops duplicates
             if (book.IsLoaned)
             {
                 TempData["Error"] = "Book is already loaned.";
                 return RedirectToAction("Index");
             }
 
+            //checks if return date is within 3-7 days, with 2 since current day is included
             if (loan.ReturnDate < loan.LoanDate.AddDays(2) || loan.ReturnDate > loan.LoanDate.AddDays(7))
             {
                 TempData["Error"] = "Return date must be between 3 and 7 days from today.";
