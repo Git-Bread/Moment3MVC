@@ -1,4 +1,4 @@
-﻿@model Moment3MVC.Models.Loans
+﻿@model Moment3MVC.ViewModels.BorrowViewModel
 
 @{
     ViewData["Title"] = "Borrow Book";
@@ -11,25 +11,25 @@
     <div class="field">
         <label class="label">Title</label>
         <div class="control">
-            <input class="input" value="@Model.Book?.Title" readonly />
+            <input class="input" value="@Model.BookTitle" readonly />
         </div>
     </div>
     <div class="field">
         <label class="label">Author</label>
         <div class="control">
-            <input class="input" value="@Model.Book?.Author" readonly />
+            <input class="input" value="@Model.BookAuthor" readonly />
         </div>
     </div>
     <div class="field">
         <label class="label">Published Date</label>
         <div class="control">
-            <input class="input" value="@Model.Book?.PublishedDate.ToShortDateString()" readonly />
+            <input class="input" value="@(Model.BookPublishedDate?.ToShortDateString())" readonly />
         </div>
     </div>
     <div class="field">
         <label class="label">Description</label>
         <div class="control">
-            <textarea class="textarea" readonly>@Model.Book?.BookDescription</textarea>
+            <textarea class="textarea" readonly>@Model.BookDescription</textarea>
         </div>
     </div>
 </div>
@@ -41,17 +41,21 @@
 
     <form asp-action="Borrow" method="post">
         <input type="hidden" asp-for="BookId" />
+        <input type="hidden" asp-for="BookTitle" />
+        <input type="hidden" asp-for="BookAuthor" />
+        <input type="hidden" asp-for="BookPublishedDate" />
+        <input type="hidden" asp-for="BookDescription" />
 
         <div class="field">
-            <label asp-for="Name" class="label">Your Name</label>
+            <label asp-for="UserName" class="label"></label>
             <div class="control">
-                <input asp-for="Name" class="input" />
+                <input asp-for="UserName" class="input" />
             </div>
-            <span asp-validation-for="Name" class="help is-danger"></span>
+            <span asp-validation-for="UserName" class="help is-danger"></span>
         </div>
 
         <div class="field">
-            <label asp-for="ReturnDate" class="label">Return Date</label>
+            <label asp-for="ReturnDate" class="label"></label>
             <div class="control">
                 <input asp-for="ReturnDate" class="input" type="date" 
                        min="@DateTime.Now.AddDays(2).ToString("yyyy-MM-dd")"

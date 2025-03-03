@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Moment3MVC.Data;
 using Moment3MVC.Models;
+using Moment3MVC.ViewModels;
 
 namespace Moment3MVC.Controllers
 {
@@ -45,7 +46,7 @@ namespace Moment3MVC.Controllers
                         //Set the book as available again
                         loan.Book.IsLoaned = false;
                         _context.Update(loan.Book);
-                        _logger.LogInformation($"Returned book: {loan.Book.Title} from {loan.Name}.");
+                        _logger.LogInformation($"Returned book: {loan.Book.Title} from {loan.User?.Name}.");
                     }
                 }
                 await _context.SaveChangesAsync();
@@ -86,10 +87,21 @@ namespace Moment3MVC.Controllers
 
         public async Task<IActionResult> Loan()
         {
+            // Make sure to include these using statements at the top of your file:
+            // using Microsoft.EntityFrameworkCore;
+            
             var loans = await _context.Loans
                 .Include(l => l.Book)
+                .Include(l => l.User)
                 .OrderByDescending(l => l.LoanDate)
                 .ToListAsync();
+            
+            // Debug logging to see what's going on
+            foreach (var loan in loans)
+            {
+                _logger.LogInformation($"Loan {loan.LoanId}: Book = {loan.Book?.Title ?? "null"}, User = {loan.User?.Name ?? "null"}");
+            }
+            
             return View(loans);
         }
 
@@ -119,13 +131,40 @@ namespace Moment3MVC.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
-            var book = await _context.Books.FindAsync(id);
-            if (book == null)
+            try
             {
-                return RedirectToAction(nameof(Index));
+                // First find the book without trying to include Loans
+                var book = await _context.Books.FindAsync(id);
+                    
+                if (book == null)
+                {
+                    return RedirectToAction(nameof(Index));
+                }
+                
+                // Find any associated loans
+                var associatedLoans = await _context.Loans
+                    .Where(l => l.BookId == id)
+                    .ToListAsync();
+                
+                // Remove any associated loans first
+                if (associatedLoans.Any())
+                {
+                    _context.Loans.RemoveRange(associatedLoans);
+                    await _context.SaveChangesAsync();
+                }
+                
+                // Now remove the book
+                _context.Books.Remove(book);
+                await _context.SaveChangesAsync();
+                
+                TempData["Success"] = "Book successfully deleted.";
             }
-            _context.Books.Remove(book);
-            await _context.SaveChangesAsync();
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting book with ID {BookId}", id);
+                TempData["Error"] = "Could not delete the book. It may be linked to active loans.";
+            }
+            
             return RedirectToAction(nameof(Index));
         }
 
@@ -136,6 +175,7 @@ namespace Moment3MVC.Controllers
             Console.WriteLine(book);
             if (book == null)
             {
+                TempData["Error"] = "Book not found.";
                 return RedirectToAction(nameof(Index));
             }
             return View(book);
@@ -194,68 +234,81 @@ namespace Moment3MVC.Controllers
             }
             
             //Create a new loan entry, might be better with a foreign key setup
-            var loan = new Loans 
-            { 
-                BookId = id,
-                LoanDate = DateTime.Now,
-                ReturnDate = DateTime.Now.AddDays(3),
-                Book = book
+            var viewModel = new BorrowViewModel
+            {
+                BookId = book.Id,
+                BookTitle = book.Title,
+                BookAuthor = book.Author,
+                BookPublishedDate = book.PublishedDate,
+                BookDescription = book.BookDescription,
+                ReturnDate = DateTime.Now.AddDays(3)
             };
+    
             
-            return View(loan);
+            return View(viewModel);
         }
 
 
         //Borrow Book Database Functionality
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Borrow([Bind("BookId,ReturnDate,Name")] Loans loan)
+        public async Task<IActionResult> Borrow(BorrowViewModel model)
         {
             if (!ModelState.IsValid)
             {
-                return View(loan);
+                return View(model);
             }
-
-            //sets loandate to current date
-            loan.LoanDate = DateTime.Now;
-            var book = await _context.Books.FindAsync(loan.BookId);
+            
+            var book = await _context.Books.FindAsync(model.BookId);
             if (book == null)
             {
                 TempData["Error"] = "Book not found.";
                 return RedirectToAction("Index");
             }
 
-            //stops duplicates
             if (book.IsLoaned)
             {
                 TempData["Error"] = "Book is already loaned.";
                 return RedirectToAction("Index");
             }
-
-            //checks if return date is within 3-7 days, with 2 since current day is included
-            if (loan.ReturnDate < loan.LoanDate.AddDays(2) || loan.ReturnDate > loan.LoanDate.AddDays(7))
+            
+            //Get the user
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Name == model.UserName);
+            if (user == null)
             {
-                TempData["Error"] = "Return date must be between 3 and 7 days from today.";
-                loan.Book = book;
-                return View(loan);
+                user = new User { Name = model.UserName };
+                _context.Users.Add(user);
+                await _context.SaveChangesAsync();
             }
+            
+            var loan = new Loans
+            {
+                BookId = model.BookId,
+                UserId = user.UserId,
+                LoanDate = DateTime.Now,
+                ReturnDate = model.ReturnDate,
+                Book = book,
+                User = user
+            };
 
             try
             {
+                //Update book status
                 book.IsLoaned = true;
-                loan.Book = book;
-                
                 _context.Update(book);
+                
+                //Add the loan
                 _context.Loans.Add(loan);
                 await _context.SaveChangesAsync();
-
+                
                 TempData["Success"] = "Book successfully borrowed!";
                 return RedirectToAction("Index");
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                _logger.LogError(e, "Error creating loan");
                 ModelState.AddModelError("", "An error occurred while processing the loan.");
-                return View(loan);
+                return View(model);
             }
         }
     }

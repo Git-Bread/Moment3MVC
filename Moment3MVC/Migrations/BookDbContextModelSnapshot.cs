@@ -57,7 +57,43 @@ namespace Moment3MVC.Migrations
                     b.Property<int>("BookId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int?>("BookId1")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime>("LoanDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("ReturnDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("UserId1")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("LoanId");
+
+                    b.HasIndex("BookId");
+
+                    b.HasIndex("BookId1");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("UserId1");
+
+                    b.ToTable("Loans");
+                });
+
+            modelBuilder.Entity("Moment3MVC.Models.User", b =>
+                {
+                    b.Property<int>("UserId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
@@ -65,25 +101,46 @@ namespace Moment3MVC.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("ReturnDate")
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
                         .HasColumnType("TEXT");
 
-                    b.HasKey("LoanId");
+                    b.HasKey("UserId");
 
-                    b.HasIndex("BookId");
-
-                    b.ToTable("Loans");
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("Moment3MVC.Models.Loans", b =>
                 {
-                    b.HasOne("Moment3MVC.Models.Book", "Book")
+                    b.HasOne("Moment3MVC.Models.Book", null)
                         .WithMany()
                         .HasForeignKey("BookId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Moment3MVC.Models.Book", "Book")
+                        .WithMany()
+                        .HasForeignKey("BookId1");
+
+                    b.HasOne("Moment3MVC.Models.User", null)
+                        .WithMany("Loans")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Moment3MVC.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId1");
+
                     b.Navigation("Book");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Moment3MVC.Models.User", b =>
+                {
+                    b.Navigation("Loans");
                 });
 #pragma warning restore 612, 618
         }
